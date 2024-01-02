@@ -1,4 +1,9 @@
 from . import db # from __init__.py
+from .transaction import Transaction 
+from .review import Review 
+from .message import Message
+from .listing import Listing
+from .wishlist import Wishlist
 from werkzeug.security import generate_password_hash
 import datetime
 import secrets
@@ -15,6 +20,14 @@ class User(db.Model):
   email = db.Column(db.String, unique = True, nullable = False)
   hashed_password = db.Column(db.String, nullable = False)
   sessions = db.relationship("Session", back_populates = "user" )
+  buyer_transactions = db.relationship("Transaction", back_populates = "buyer")
+  seller_transactions = db.relationship("Transaction", back_populates = "seller")
+  reviews_written = db.relationship("Review", back_populates = "reviewer")
+  reviews_received = db.relationship("Review", back_populates = "reviewee") 
+  messages_sent = db.relationship("Message", back_populates = "sender")
+  messages_received = db.relationship("Message", back_populates = "receiver")
+  listings = db.relationship("Listing", back_populates = "seller_id")
+  wishlists = db.relationship("Wishlist", back_populates = "user_id")
   
   def create_password(self, password):
     """
@@ -39,7 +52,14 @@ class User(db.Model):
       "username": self.username,
       "contact_info": self.contact_info,
       "email": self.email,
-      "sessions": [session.serialize() for session in self.sessions]
+      "sessions": [session.serialize() for session in self.sessions],
+      "buyer_transactions": [transaction.serialize() for transaction in self.buyer_transactions],
+      "seller_transactions": [transaction.serialize() for transaction in self.seller_transactions],
+      "reviews_written": [review.serialize() for review in self.reviews_written],
+      "reviews_received": [review.serialize() for review in self.reviews_received],
+      "messages_sent": [message.serialize() for message in self.messages_sent],
+      "messages_received": [message.serialize() for message in self.messages_received],
+      "listings": [listing.serialize() for listing in self.listings]
     }
     
   def simple_serialize(self):

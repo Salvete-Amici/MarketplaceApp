@@ -1,5 +1,6 @@
 from . import db
 import datetime
+from .assoc_tables import wishlist_items_association_table
 
 class Listing(db.Model):
   """
@@ -14,6 +15,7 @@ class Listing(db.Model):
   image_url = db.Column(db.String, nullable = True)
   listed_time = db.Column(db.DateTime, nullable = False)
   seller_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable = False)
+  wishlists = db.relationship("Wishlist", secondary = wishlist_items_association_table, back_populates = "items")
   
   def __init__(self, seller_id, **kwargs):
     """

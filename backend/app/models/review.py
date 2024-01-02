@@ -47,6 +47,7 @@ class Review(db.Model):
       "rating": self.rating,
       "text": self.text,
       "review_time": self.review_time
+    } 
+    
 
-    }  
   
