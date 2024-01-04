@@ -102,7 +102,7 @@ class Session(db.Model):
   @staticmethod
   def token_generate():
     """
-    Generate session token.
+    Generate url-safe session token.
     """
     return secrets.token_urlsafe()
   
