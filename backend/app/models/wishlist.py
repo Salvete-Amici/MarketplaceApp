@@ -10,12 +10,10 @@ class Wishlist(db.Model):
   items = db.relationship("Listing", secondary = wishlist_items_association_table, back_populates = "wishlists")  
   user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable = False)
   
-  def __init__(self, item_id, user_id, **kwargs):
+  def __init__(self, user_id):
     """
     Initialize a wishlist object. 
     """
-    self.title = kwargs.get("title")
-    self.item_id = item_id
     self.user_id = user_id
     
   def serialize(self):
@@ -23,20 +21,7 @@ class Wishlist(db.Model):
     Serialize a wishlist object.
     """
     return {
-      "title": self.title,
-      "item_id": self.item_id,
+      "items": [item.serialize() for item in self.items],
       "user_id": self.user_id
     }
     
-  def simple_serialize(self):
-    """
-    Serialize a listing object without listed time and seller id.
-    """
-    return {
-      "title": self.title,
-      "description": self.description,
-      "price": self.price,
-      "category": self.category,
-      "image_url": self.image_url
-    }  
-  

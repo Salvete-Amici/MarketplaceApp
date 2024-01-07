@@ -21,7 +21,7 @@ class Message(db.Model):
     self.receiver = receiver
     self.timestamp = datetime.utcnow()
     self.text = kwargs.get("text")
-    self.status = "awaiting review"
+    self.status = "sent"
     
   def serialize(self):
     """
@@ -46,8 +46,7 @@ class Message(db.Model):
     }  
   
   def update_message_status(self, new_status):
-    """Update the status of message. Possible status include awaiting review and 
-    viewing, and viewed.
+    """Update the status of message. Possible status include sent and viewed.
     """
     self.transaction_status = new_status
     db.session.commit() 
