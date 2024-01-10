@@ -36,7 +36,7 @@ class WishlistService:
     """
     user_wishlist = Wishlist.query.filter_by(user_id = user_id).first()
     items = user_wishlist.items
-    return items 
+    return {"wishlist_id": user_wishlist.id, "items": [item.serialize() for item in items]}
   
   @staticmethod
   def delete_from_wishlist(user_id, item_id):

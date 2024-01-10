@@ -141,9 +141,11 @@ class SessionService:
     if session.session_validation():
       session.session_token = Session.token_generate()
       session.refresh_token = Session.token_generate()
-      session.expires_at = datetime.utnow() + datetime.timedelta(minutes = 30)
+      session.expires_at = datetime.utcnow() + datetime.timedelta(minutes = 30)
       db.session.commit()
       return session.serialize()
+    else: 
+      return None 
       
   @staticmethod
   def terminate_session(session_token):

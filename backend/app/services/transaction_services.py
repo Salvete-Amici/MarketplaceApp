@@ -32,6 +32,8 @@ class TransactionService:
     Returns: serialized transaction data. 
     """
     transaction = Transaction.query.get(transaction_id)
+    if transaction is None:
+      return None
     return transaction.serialize()
   
   @staticmethod
@@ -61,6 +63,13 @@ class TransactionService:
     transactions = Transaction.query.filter_by(seller = seller).all()
     seller_lst = [transaction.serialize() for transaction in transactions]
     return seller_lst
+  
+  @staticmethod
+  def retrieve_all_transactions(user_id):
+    buyer_transactions = Transaction.query.filter_by(buyer = user_id).all()
+    seller_transactions = Transaction.query.filter_by(seller = user_id).all()
+    all_transactions = buyer_transactions + seller_transactions
+    return [transaction.serialize() for transaction in all_transactions]
   
   @staticmethod
   def update_transaction(transaction_id, new_status):

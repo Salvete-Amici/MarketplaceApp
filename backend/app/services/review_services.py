@@ -52,4 +52,19 @@ class ReviewService:
     Returns: serialized review data. 
     """
     review = Review.query.get(review_id)
+    if review is None:
+      return None
     return review.serialize()
+  
+  @staticmethod
+  def get_all_reviews(reviewee_id):
+    """
+    Get all reviews for a specific user (reviewee).
+    
+    Parameters:
+    reviewee_id: integer identifier of the reviewee.
+    
+    Returns: a list of serialized reviews.
+    """
+    reviews = Review.query.filter_by(reviewee = reviewee_id).all()
+    return [review.serialize() for review in reviews]
