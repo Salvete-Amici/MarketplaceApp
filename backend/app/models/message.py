@@ -1,5 +1,5 @@
-from . import db
-import datetime
+from app import db
+from datetime import datetime, timedelta
 
 class Message(db.Model):
   """
@@ -7,8 +7,8 @@ class Message(db.Model):
   """
   __tablename__ = "messages"
   id = db.Column(db.Integer, primary_key = True, autoincrement = True)
-  sender = db.Column(db.Integer, db.ForeignKey("users.id"), nullable = False)
-  receiver = db.Column(db.Integer, db.ForeignKey("users.id"), nullable = False)
+  sender_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable = False)
+  receiver_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable = False)
   timestamp = db.Column(db.Integer, nullable = False)
   text = db.Column(db.String, nullable = True)
   status = db.Column(db.String, nullable = False)
@@ -17,9 +17,9 @@ class Message(db.Model):
     """
     Initialize a message object. 
     """
-    self.sender = sender
-    self.receiver = receiver
-    self.timestamp = datetime.utcnow()
+    self.sender_id = sender
+    self.receiver_id = receiver
+    self.timestamp = datetime.utcnow() - timedelta(hours = 5)
     self.text = kwargs.get("text")
     self.status = "sent"
     
@@ -28,8 +28,8 @@ class Message(db.Model):
     Serialize a message object.
     """
     return {
-      "sender": self.sender,
-      "receiver": self.receiver,
+      "sender": self.sender_id,
+      "receiver": self.receiver_id,
       "timestamp": self.timestamp,
       "text": self.text,
       "status": self.status
@@ -40,7 +40,7 @@ class Message(db.Model):
     Serialize a message object without receiver and text.
     """
     return {
-      "sender": self.sender,
+      "sender": self.sender_id,
       "timestamp": self.timestamp,
       "status": self.status
     }  

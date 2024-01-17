@@ -18,6 +18,8 @@ class ReviewService:
     Returns: serialized new review.
     """
     review = Review(reviewer = reviewer, reviewee = reviewee, item = item, rating = rating, text = text)
+    db.session.add(review)
+    db.session.commit()
     return review.serialize()
   
   @staticmethod
@@ -32,14 +34,19 @@ class ReviewService:
     Returns: updated review.
     """
     review = Review.query.get(review_id)
-    try:
-      for key, val in kwargs.item():
-        if hasattr(review, key):
-          setattr(review, key, val)
-      db.session.commit()
-      return review.serialize()
-    except Exception as e:
-      db.session.rollback()
+    if review:
+      try:
+        for key, val in kwargs.items():
+          if hasattr(review, key):
+            setattr(review, key, val)
+        db.session.commit()
+        return review.serialize()
+      except Exception as e:
+        print(f"Error updating review: {e}")
+        db.session.rollback()
+        return None
+    else:
+      return None
       
   @staticmethod
   def read_review(review_id):

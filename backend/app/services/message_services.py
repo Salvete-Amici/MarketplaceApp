@@ -31,6 +31,8 @@ class MessageService:
     Returns: serialized message data.
     """
     message = Message.query.get(message_id)
+    if message is None:
+      return None
     message.update_message_status("viewed")
     db.session.commit()
     return message.serialize()
@@ -45,7 +47,7 @@ class MessageService:
     
     Returns: a list of serialized messages.
     """
-    messages = Message.query.filter_by(receiver = receiver).all()
+    messages = Message.query.filter_by(receiver_id = receiver).all()
     message_lst = [message.serialize() for message in messages]
     return message_lst
     

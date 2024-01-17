@@ -6,6 +6,10 @@ def create_app(config_filename):
     app = Flask(__name__) 
     app.config.from_pyfile(config_filename)
     db.init_app(app)  
+    
+    with app.app_context():
+        from .models import user, listing, review, wishlist, transaction, message, assoc_tables
+        db.create_all()
 
     from .controllers.user_endpoints import user_endpoints_blueprint
     from .controllers.listing_endpoints import listing_endpoints_blueprint

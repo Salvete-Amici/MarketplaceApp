@@ -17,12 +17,17 @@ class WishlistService:
     """
     user_wishlist = Wishlist.query.filter_by(user_id = user_id).first()
     item = Listing.query.get(item_id)
+    if item is None:
+      return False, "Item Not Found"
     if item not in user_wishlist.items:
       try:
         user_wishlist.items.append(item)
-        return True
+        db.session.commit()
+        return True, user_wishlist
       except Exception as e: 
-        return False
+        return False, f"Error: {e}"
+    elif item in user_wishlist.items:
+      return False, "Item Already In Wishlist"
     
   @staticmethod
   def get_all_items(user_id):
@@ -50,12 +55,15 @@ class WishlistService:
     Returns: true if item successfully removed from wishlist, otherwise false.
     """
     user_wishlist = Wishlist.query.filter_by(user_id = user_id).first()
+    if user_wishlist is None:
+      return False, "Wishlist Does Not Exist"
+    int_id = int(item_id) 
     for item in user_wishlist.items:
-      if item.id == item_id:
+      if item.id == int_id:
         user_wishlist.items.remove(item)
         db.session.commit()
-        return True
-    return False 
+        return True, user_wishlist
+    return False, "Item Not Found"
     
   @staticmethod
   def clear_wishlist(user_id):
@@ -68,11 +76,12 @@ class WishlistService:
     Returns: true if operation was successful otherwise false.
     """
     try: 
-      user_wishlist = Wishlist.query.filter_by(user_id = user_id)
+      user_wishlist = Wishlist.query.filter_by(user_id = user_id).first()
       user_wishlist.items.clear()
       db.session.commit()
       return True
     except Exception as e:
+      print(e)
       return False
       
       

@@ -1,5 +1,5 @@
-from . import db
-import datetime
+from app import db
+from datetime import datetime, timedelta
 
 class Review(db.Model):
   """
@@ -9,6 +9,8 @@ class Review(db.Model):
   id = db.Column(db.Integer, primary_key = True, autoincrement = True)
   reviewer = db.Column(db.Integer, db.ForeignKey("users.id"), nullable = False)
   reviewee = db.Column(db.Integer, db.ForeignKey("users.id"), nullable = False)
+  reviewer_relationship = db.relationship("User", foreign_keys = [reviewer], back_populates = "reviews_written")
+  reviewee_relationship = db.relationship("User", foreign_keys = [reviewee], back_populates = "reviews_received")
   item = db.Column(db.Integer, db.ForeignKey("listings.id"), nullable = False)
   rating = db.Column(db.Integer, nullable = False)
   text = db.Column(db.String, nullable = True)
@@ -23,13 +25,14 @@ class Review(db.Model):
     self.item = item
     self.rating = kwargs.get("rating")
     self.text = kwargs.get("text")
-    self.review_time = datetime.utcnow()
+    self.review_time = datetime.utcnow() - timedelta(hours = 5)
     
   def serialize(self):
     """
     Serialize a review object.
     """
     return {
+      "review_id": self.id,
       "reviewer": self.reviewer,
       "reviewee": self.reviewee,
       "item": self.item,

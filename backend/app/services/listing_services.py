@@ -1,7 +1,7 @@
 from .. import db
 from ..models.listing import Listing
 
-class ListingServices:
+class ListingService:
   
   @staticmethod
   def create_listing(seller_id, title, description, price, category, image_url):
@@ -63,11 +63,14 @@ class ListingServices:
     Returns: updated listing.
     """
     listing = Listing.query.get(listing_id)
-    for key, val in kwargs.item():
-      if hasattr(listing, key):
-        setattr(listing, key, val)
-    db.session.commit()
-    return listing.serialize()
+    try:
+      for key, val in kwargs.items():
+        if hasattr(listing, key):
+          setattr(listing, key, val)
+      db.session.commit()
+      return listing.serialize()
+    except Exception as e:
+      return None
   
   @staticmethod
   def delete_listing(listing_id):

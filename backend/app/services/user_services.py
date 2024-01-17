@@ -1,7 +1,9 @@
-from ..models.user import User, Session 
+from ..models.user import User, Session, Wishlist
 from .. import db 
 from werkzeug.security import check_password_hash
-import datetime
+from datetime import datetime, timedelta
+import logging
+logging.basicConfig(level=logging.INFO)
 
 class UserService:
   
@@ -18,10 +20,17 @@ class UserService:
     
     Returns: a new user object. 
     """
+    existing_user = User.query.filter_by(email = email).first()
+    if existing_user:
+      return None
     user = User(username = username, contact_info = contact_info, email = email)
     user.create_password(password)
     db.session.add(user)
     db.session.commit()
+    wishlist = Wishlist(user_id = user.id)
+    db.session.add(wishlist)
+    db.session.commit()
+    return user
   
   @staticmethod
   def authenticate_user(login_method, password):
@@ -70,15 +79,21 @@ class UserService:
     
     Returns: user object with updated information, if failed to update then None.
     """
+    logging.info(f"Updating user {user_id} with info {new_info}")
     user = User.query.get(user_id)
     if user:
-      for key, val in new_info.items():
-        if hasattr(user, key):
-          setattr(user, key, val)
+      try:
+        for key, val in new_info.items():
+          if hasattr(user, key):
+            logging.info(f"Setting {key} to {val}")
+            setattr(user, key, val) 
+        db.session.commit()
+        logging.info(f"User {user_id} updated")
+        return user
+      except Exception as e:
+        return None
     else:
       return None
-    db.session.commit()
-    return user
   
   def delete_user(user_id):
     """
@@ -93,9 +108,9 @@ class UserService:
     if user:
       db.session.delete(user)
       db.session.commit()
-      return True
+      return user
     else:
-      return False
+      return None
     
 class SessionService:
   
@@ -141,7 +156,7 @@ class SessionService:
     if session.session_validation():
       session.session_token = Session.token_generate()
       session.refresh_token = Session.token_generate()
-      session.expires_at = datetime.utcnow() + datetime.timedelta(minutes = 30)
+      session.expires_at = datetime.utcnow() - timedelta(hours = 5) + timedelta(minutes = 30)
       db.session.commit()
       return session.serialize()
     else: 

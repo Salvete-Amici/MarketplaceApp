@@ -1,5 +1,5 @@
-from . import db
-import datetime
+from app import db
+from datetime import datetime, timedelta
 from .assoc_tables import wishlist_items_association_table
 
 class Listing(db.Model):
@@ -26,7 +26,7 @@ class Listing(db.Model):
     self.price = kwargs.get("price")
     self.category = kwargs.get("category")
     self.image_url = kwargs.get("image_url")
-    self.listed_time = datetime.utcnow()
+    self.listed_time = datetime.utcnow() - timedelta(hours = 5)
     self.seller_id = seller_id
     
   def serialize(self):
@@ -40,7 +40,8 @@ class Listing(db.Model):
       "category": self.category,
       "image_url": self.image_url,
       "listed_time": self.listed_time,
-      "seller_id": self.seller_id
+      "seller_id": self.seller_id,
+      "listing_id": self.id
     }
     
   def simple_serialize(self):

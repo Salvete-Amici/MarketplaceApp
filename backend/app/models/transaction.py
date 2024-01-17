@@ -1,5 +1,5 @@
-from . import db
-import datetime
+from app import db
+from datetime import datetime, timedelta
 
 class Transaction(db.Model):
   """
@@ -7,8 +7,10 @@ class Transaction(db.Model):
   """
   __tablename__ = "transactions"
   id = db.Column(db.Integer, primary_key = True, autoincrement = True)
-  buyer = db.Column(db.Integer, db.ForeignKey("users.id"), nullable = False)
-  seller = db.Column(db.Integer, db.ForeignKey("users.id"), nullable = False)
+  buyer_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable = False)
+  seller_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable = False)
+  buyer = db.relationship("User", foreign_keys = [buyer_id], back_populates = "buyer_transactions")
+  seller = db.relationship("User", foreign_keys = [seller_id], back_populates = "seller_transactions")
   item = db.Column(db.Integer, db.ForeignKey("listings.id"), nullable = False)
   transaction_time = db.Column(db.DateTime, nullable = False)
   transaction_amount = db.Column(db.Numeric(precision = 8, scale = 2), nullable = False)
@@ -21,7 +23,7 @@ class Transaction(db.Model):
     self.buyer = buyer
     self.seller = seller
     self.item = item
-    self.transaction_time = datetime.utcnow()
+    self.transaction_time = datetime.utcnow() - timedelta(hours = 5)
     self.transaction_amount = kwargs.get("transaction_amount")
     self.transaction_status = "pending"
     
@@ -30,8 +32,8 @@ class Transaction(db.Model):
     Serialize a transaction object.
     """
     return {
-      "buyer": self.buyer,
-      "seller": self.seller,
+      "buyer": {"id": self.buyer.id, "username": self.buyer.username} if self.buyer else None,
+      "seller": {"id": self.seller.id, "username": self.seller.username} if self.seller else None,
       "item": self.item,
       "transaction_time": self.transaction_time,
       "transaction_amount": self.transaction_amount,

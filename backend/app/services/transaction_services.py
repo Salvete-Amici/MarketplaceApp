@@ -1,4 +1,6 @@
 from ..models.transaction import Transaction
+from ..models.user import User
+from ..models.listing import Listing
 from .. import db
 
 class TransactionService:
@@ -16,6 +18,10 @@ class TransactionService:
     
     Returns: serialized new transaction.
     """
+    buyer = User.query.get(buyer)
+    seller = User.query.get(seller)
+    if not buyer or not seller:
+      raise ValueError("Buyer or seller not found") 
     transaction = Transaction(buyer = buyer, seller = seller, item = item, transaction_amount = transaction_amount)
     db.session.add(transaction)
     db.session.commit()
@@ -37,7 +43,7 @@ class TransactionService:
     return transaction.serialize()
   
   @staticmethod
-  def retrieve_all_as_buyer(buyer):
+  def retrieve_all_as_buyer(buyer_id):
     """
     Get all transactions as buyers using user_id.
     
@@ -46,12 +52,15 @@ class TransactionService:
     
     Returns: a list of serialized buyer transactions.
     """
-    transactions = Transaction.query.filter_by(buyer = buyer).all()
+    buyer = User.query.get(buyer_id)
+    if buyer is None:
+      raise ValueError("Buyer Not Found")
+    transactions = Transaction.query.filter_by(buyer_id = buyer.id).all()
     buyer_lst = [transaction.serialize() for transaction in transactions]
     return buyer_lst
   
   @staticmethod
-  def retrive_all_as_seller(seller):
+  def retrieve_all_as_seller(seller_id):
     """
     Get all transactions as sellers using user_id.
     
@@ -60,14 +69,17 @@ class TransactionService:
     
     Returns: a list of serialized seller transactions.
     """
-    transactions = Transaction.query.filter_by(seller = seller).all()
+    seller = User.query.get(seller_id)
+    if seller is None:
+      raise ValueError("Seller Not Found")
+    transactions = Transaction.query.filter_by(seller_id = seller.id).all()
     seller_lst = [transaction.serialize() for transaction in transactions]
     return seller_lst
   
   @staticmethod
   def retrieve_all_transactions(user_id):
-    buyer_transactions = Transaction.query.filter_by(buyer = user_id).all()
-    seller_transactions = Transaction.query.filter_by(seller = user_id).all()
+    buyer_transactions = Transaction.query.filter_by(buyer_id = user_id).all()
+    seller_transactions = Transaction.query.filter_by(seller_id = user_id).all()
     all_transactions = buyer_transactions + seller_transactions
     return [transaction.serialize() for transaction in all_transactions]
   

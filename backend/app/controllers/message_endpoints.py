@@ -22,11 +22,11 @@ def check_message(message_id):
     return failure_helper("Message Not Found", 404)
   return success_helper(message, 200)
 
-@message_endpoints_blueprint.route("/api/messages/<int:receiver_id>/")
+@message_endpoints_blueprint.route("/api/users/messages/")
 def view_all_messages():
   data = request.json
   receiver = data.get("receiver")
-  if not receiver:
+  if receiver is None:
     return failure_helper("Receiver ID Not Supplied", 400)
   messages = MessageService.get_all_messages(receiver)
-  return success_helper(jsonify(messages), 200)
+  return success_helper(messages, 200)

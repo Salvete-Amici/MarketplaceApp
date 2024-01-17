@@ -1,4 +1,4 @@
-from . import db
+from app import db
 from .assoc_tables import wishlist_items_association_table
 
 class Wishlist(db.Model):

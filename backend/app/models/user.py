@@ -1,11 +1,11 @@
-from . import db # from __init__.py
+from app import db # from __init__.py
 from .transaction import Transaction 
 from .review import Review 
 from .message import Message
 from .listing import Listing
 from .wishlist import Wishlist
 from werkzeug.security import generate_password_hash
-import datetime
+from datetime import datetime, timedelta
 import secrets
 
 # User Class 
@@ -20,14 +20,14 @@ class User(db.Model):
   email = db.Column(db.String, unique = True, nullable = False)
   hashed_password = db.Column(db.String, nullable = False)
   sessions = db.relationship("Session", back_populates = "user" )
-  buyer_transactions = db.relationship("Transaction", back_populates = "buyer")
-  seller_transactions = db.relationship("Transaction", back_populates = "seller")
-  reviews_written = db.relationship("Review", back_populates = "reviewer")
-  reviews_received = db.relationship("Review", back_populates = "reviewee") 
-  messages_sent = db.relationship("Message", back_populates = "sender")
-  messages_received = db.relationship("Message", back_populates = "receiver")
-  listings = db.relationship("Listing", back_populates = "seller_id")
-  wishlists = db.relationship("Wishlist", back_populates = "user_id")
+  buyer_transactions = db.relationship("Transaction", foreign_keys = [Transaction.buyer_id], back_populates = "buyer")
+  seller_transactions = db.relationship("Transaction", foreign_keys = [Transaction.seller_id], back_populates = "seller")
+  reviews_written = db.relationship("Review", foreign_keys = [Review.reviewer], back_populates = "reviewer_relationship")
+  reviews_received = db.relationship("Review", foreign_keys = [Review.reviewee], back_populates = "reviewee_relationship") 
+  messages_sent = db.relationship("Message", foreign_keys = [Message.sender_id], backref = "sender")
+  messages_received = db.relationship("Message", foreign_keys = [Message.receiver_id], backref = "receiver")
+  listings = db.relationship("Listing", backref = "seller")
+  wishlists = db.relationship("Wishlist", backref = "user")
   
   def create_password(self, password):
     """
@@ -63,12 +63,8 @@ class User(db.Model):
     }
     
   def simple_serialize(self):
-    """
-    Serialize a user object without assignments, students, or instructors fields
-    """
     return {
       "id": self.id,
-      "code": self.code,
       "contact_info": self.contact_info,
       "email": self.email
     }  
@@ -93,8 +89,8 @@ class Session(db.Model):
     Initialize a session object. 
     """
     self.session_token = self.token_generate()
-    self.created_at = datetime.utcnow()
-    self.expires_at = self.created_at + datetime.timedelta(minutes = 30)
+    self.created_at = datetime.utcnow() - timedelta(hours = 5)
+    self.expires_at = self.created_at + timedelta(minutes = 30)
     self.refresh_token = self.token_generate()
     self.session_status = "active"
     self.user_id = user_id
@@ -110,7 +106,7 @@ class Session(db.Model):
     """
     Check whether session is valid.
     """
-    return self.session_status == "active" and datetime.utcnow() < self.expires_at
+    return self.session_status == "active" and datetime.utcnow() - timedelta(hours = 5) < self.expires_at
   
   def serialize(self):
     """
@@ -121,6 +117,7 @@ class Session(db.Model):
       "session_token": self.session_token,
       "created_at": self.created_at.isoformat(),
       "expires_at": self.expires_at.isoformat(),
+      "refresh_token": self.refresh_token,
       "session_status": self.session_status,
       "user_id": self.user_id
     } 

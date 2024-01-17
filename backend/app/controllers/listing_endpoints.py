@@ -16,7 +16,7 @@ def new_listing():
   if seller_id is None or title is None or description is None or price is None or category is None or image_url is None:
     return failure_helper("Missing Information", 400)
   listing = ListingService.create_listing(seller_id, title, description, price, category, image_url)
-  return success_helper(listing.serialize(), 201)
+  return success_helper(listing, 201)
   
 @listing_endpoints_blueprint.route("/api/listings/")
 def listings():

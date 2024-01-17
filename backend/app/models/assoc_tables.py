@@ -1,4 +1,4 @@
-from . import db
+from app import db
 
 wishlist_items_association_table = db.Table(
   "wishlist_items",
